@@ -10,14 +10,11 @@ require 'config/connect.php';
 
 // // Periksa apakah pengguna adalah pengelola
 // if ($_SESSION['user']['role'] !== 'pengelola') {
-//     // Jika bukan pengelola, redirect ke halaman unauthorized
 //     header("Location: page.php?mod=unaut2");
 //     exit();
 // }
 
 $id_pengelola = $_SESSION['user']['id'];
-
-
 
 // Ambil transaksi penarikan yang pending
 $query_penarikan = "SELECT tp.*, wm.nama_warung, wm.saldo AS saldo_warung
@@ -26,44 +23,59 @@ $query_penarikan = "SELECT tp.*, wm.nama_warung, wm.saldo AS saldo_warung
                     WHERE tp.status = 'pending'";
 $result_penarikan = mysqli_query($conn, $query_penarikan);
 
+// Ambil transaksi penarikan yang gagal
+$query_penarikan_gagal = "SELECT tp.*, wm.nama_warung
+                          FROM transaksi_pencairan tp
+                          JOIN warung_mitra wm ON tp.id_warung_mitra = wm.id
+                          WHERE tp.status = 'gagal'";
+$result_penarikan_gagal = mysqli_query($conn, $query_penarikan_gagal);
+
 // Memproses penarikan
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id_penarikan = $_POST['id_penarikan'];
-    $status = $_POST['status'];
+    if (isset($_POST['id_penarikan']) && $_POST['status'] == 'selesai') {
+        $id_penarikan = $_POST['id_penarikan'];
 
-    // Ambil data penarikan
-    $query_detail = "SELECT tp.*, wm.saldo AS saldo_warung FROM transaksi_pencairan tp 
-                     JOIN warung_mitra wm ON tp.id_warung_mitra = wm.id
-                     WHERE tp.id = '$id_penarikan'";
-    $result_detail = mysqli_query($conn, $query_detail);
-    $penarikan = mysqli_fetch_assoc($result_detail);
+        // Ambil data penarikan
+        $query_detail = "SELECT tp.*, wm.saldo AS saldo_warung FROM transaksi_pencairan tp 
+                         JOIN warung_mitra wm ON tp.id_warung_mitra = wm.id
+                         WHERE tp.id = '$id_penarikan'";
+        $result_detail = mysqli_query($conn, $query_detail);
+        $penarikan = mysqli_fetch_assoc($result_detail);
 
-    if ($status == 'selesai' && $penarikan['jumlah'] <= $penarikan['saldo_warung']) {
-        $jumlah_penarikan = $penarikan['jumlah'];
+        if ($penarikan['jumlah'] <= $penarikan['saldo_warung']) {
+            $jumlah_penarikan = $penarikan['jumlah'];
 
-        // Kurangi saldo warung mitra
-        $query_update_warung = "UPDATE warung_mitra SET saldo = saldo - $jumlah_penarikan WHERE id = '{$penarikan['id_warung_mitra']}'";
-        mysqli_query($conn, $query_update_warung);
+            // Kurangi saldo warung mitra
+            $query_update_warung = "UPDATE warung_mitra SET saldo = saldo - $jumlah_penarikan WHERE id = '{$penarikan['id_warung_mitra']}'";
+            mysqli_query($conn, $query_update_warung);
 
+            // Ubah status penarikan menjadi selesai
+            $query_update_penarikan = "UPDATE transaksi_pencairan SET status = 'selesai' WHERE id = '$id_penarikan'";
+            mysqli_query($conn, $query_update_penarikan);
 
-        // Ubah status penarikan menjadi selesai
-        $query_update_penarikan = "UPDATE transaksi_pencairan SET status = 'selesai' WHERE id = '$id_penarikan'";
-        mysqli_query($conn, $query_update_penarikan);
+            // Salin data penarikan ke tabel riwayat_penarikan
+            $query_insert_riwayat = "INSERT INTO riwayat_penarikan (id_warung_mitra, jumlah, status)
+                                    SELECT id_warung_mitra, jumlah, 'selesai'
+                                    FROM transaksi_pencairan
+                                    WHERE id = '$id_penarikan'";
+            mysqli_query($conn, $query_insert_riwayat);
 
-        // Salin data penarikan ke tabel riwayat_penarikan
-        $query_insert_riwayat = "INSERT INTO riwayat_penarikan (id_warung_mitra, jumlah, status)
-                                SELECT id_warung_mitra, jumlah, 'selesai'
-                                FROM transaksi_pencairan
-                                WHERE id = '$id_penarikan'";
-        mysqli_query($conn, $query_insert_riwayat);
+            // Hapus data dari tabel transaksi_pencairan
+            $query_delete_penarikan = "DELETE FROM transaksi_pencairan WHERE id = '$id_penarikan'";
+            mysqli_query($conn, $query_delete_penarikan);
 
-        // Hapus data dari tabel transaksi_pencairan
-        $query_delete_penarikan = "DELETE FROM transaksi_pencairan WHERE id = '$id_penarikan'";
-        mysqli_query($conn, $query_delete_penarikan);
+            echo "<script>alert('Pencairan Saldo selesai'); window.location.href='page.php?mod=data-penarikan';</script>";
+        } else {
+            echo "<script>alert('Saldo mitra tidak cukup'); window.location.href='page.php?mod=data-penarikan';</script>";
+        }
+    } elseif (isset($_POST['id_gagal']) && $_POST['status'] == 'gagal') {
+        $id_gagal = $_POST['id_gagal'];
 
-        echo "<script>alert('Pencairan Saldo selesai'); window.location.href='page.php?mod=data-penarikan';</script>";;
-    } else {
-        echo "<script>alert('Saldo mitra tidak cukup'); window.location.href='page.php?mod=data-penarikan';</script>";;
+        // Proses untuk menandai transaksi sebagai gagal
+        $query_gagal = "UPDATE transaksi_pencairan SET status = 'gagal' WHERE id = '$id_gagal'";
+        mysqli_query($conn, $query_gagal);
+
+        echo "<script>alert('Transaksi telah ditandai gagal'); window.location.href='page.php?mod=data-penarikan';</script>";
     }
 }
 
@@ -88,8 +100,6 @@ $result_riwayat = mysqli_query($conn, $query_riwayat);
     <div class="container mt-5">
         <h1>Proses Penarikan Saldo</h1>
 
-
-
         <h4 class="mt-4">Penarikan Pending</h4>
         <?php if (mysqli_num_rows($result_penarikan) > 0): ?>
             <table class="table">
@@ -105,11 +115,14 @@ $result_riwayat = mysqli_query($conn, $query_riwayat);
                     <tr>
                         <td><?= $penarikan['nama_warung'] ?></td>
                         <td><?= number_format($penarikan['jumlah'], 2, ',', '.') ?></td>
-
                         <td>
                             <form method="POST" class="d-inline">
                                 <input type="hidden" name="id_penarikan" value="<?= $penarikan['id'] ?>">
                                 <button type="submit" name="status" value="selesai" class="btn btn-success">Selesai</button>
+                            </form>
+                            <form method="POST" class="d-inline">
+                                <input type="hidden" name="id_gagal" value="<?= $penarikan['id'] ?>">
+                                <button type="submit" name="status" value="gagal" class="btn btn-warning">Gagal</button>
                             </form>
                         </td>
                     </tr>
@@ -144,6 +157,30 @@ $result_riwayat = mysqli_query($conn, $query_riwayat);
             </table>
         <?php else: ?>
             <p>Tidak ada riwayat penarikan.</p>
+        <?php endif; ?>
+
+        <h4 class="mt-4">Penarikan Gagal</h4>
+        <?php if (mysqli_num_rows($result_penarikan_gagal) > 0): ?>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Warung</th>
+                        <th>Jumlah (Rp)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while($penarikan_gagal = mysqli_fetch_assoc($result_penarikan_gagal)): ?>
+                    <tr>
+                        <td><?= $penarikan_gagal['nama_warung'] ?></td>
+                        <td><?= number_format($penarikan_gagal['jumlah'], 2, ',', '.') ?></td>
+                        <td><?= $penarikan_gagal['status'] ?></td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>Tidak ada penarikan gagal.</p>
         <?php endif; ?>
     </div>
 </body>

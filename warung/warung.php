@@ -33,11 +33,23 @@ $query_pending = "SELECT t.*, r.nama AS nama_pembayar
                   WHERE t.id_warung_mitra = '$id_warung' AND t.status = 'pending'";
 $result_pending = mysqli_query($conn, $query_pending);
 
+// ambil transaksi gagal
+$query_gagal = "SELECT t.*, wm.nama_warung, r.nama AS nama_pembayar 
+                  FROM transaksi t 
+                  JOIN warung_mitra wm ON t.id_warung_mitra = wm.id 
+                  JOIN rumah_tangga r ON t.id_rumah_tangga = r.id 
+                  WHERE t.id_warung_mitra = '$id_warung' AND t.status = 'gagal'
+                  ORDER BY t.tanggal DESC";
+$result_gagal = mysqli_query($conn, $query_gagal);
+
+// Ambil transaksi penarikan
 $query_penarikan = "SELECT tp.*, wm.nama_warung, wm.saldo AS saldo_warung
                     FROM transaksi_pencairan tp
                     JOIN warung_mitra wm ON tp.id_warung_mitra = wm.id
-                    WHERE tp.status = 'pending'";
+                    WHERE tp.id_warung_mitra = '$id_warung' 
+                    AND (tp.status = 'gagal' OR tp.status = 'pending')";
 $result_penarikan = mysqli_query($conn, $query_penarikan);
+
 
 // Ambil riwayat pembayaran
 $query_riwayat = "SELECT t.*, wm.nama_warung, r.nama AS nama_pembayar 
@@ -113,15 +125,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "Transaksi tidak ditemukan.";
     }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['gagal_id'])) {
 
          // Proses untuk menghapus transaksi
-        $hapus_id = $_POST['hapus_id'];
-        $query_hapus = "DELETE FROM transaksi WHERE id = '$hapus_id'";
-        mysqli_query($conn, $query_hapus);
+        $gagal_id = $_POST['gagal_id'];
+        $query_gagal = "UPDATE transaksi SET status = 'gagal' WHERE id = '$gagal_id'";
+        mysqli_query($conn, $query_gagal);
+
+        
         // Redirect atau tampilkan pesan sukses
-        echo "<script>alert('Transaksi berhasil dihapus.'); window.location.href='page.php?mod=warung';</script>";
+        echo "<script>alert('Transaksi Telah Gagal'); window.location.href='page.php?mod=warung';</script>";
     
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_id'])) {
+
+    // Proses untuk menghapus transaksi
+   $hapus_id = $_POST['hapus_id'];
+   $query_hapus = "DELETE FROM transaksi WHERE id = '$hapus_id'";
+   mysqli_query($conn, $query_hapus);
+   // Redirect atau tampilkan pesan sukses
+   echo "<script>alert('Transaksi berhasil dihapus.'); window.location.href='page.php?mod=warung';</script>";
+
 }
       
 }
@@ -247,6 +272,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_id'])) {
                                     <input type="hidden" name="transaksi_id" value="<?= $pending['id'] ?>">
                                     <button type="submit" class="btn btn-success">Selesai</button>
                                 </form>
+
+                                <form method="POST" > <!-- Halaman untuk memperbarui status -->
+                                    <input type="hidden" name="gagal_id" value="<?= $pending['id'] ?>">
+                                    <button type="submit" class="btn btn-warning">Gagal</button>
+                                </form>
+
                                 <form method="POST"> <!-- Halaman untuk menghapus transaksi -->
                                     <input type="hidden" name="hapus_id" value="<?= $pending['id'] ?>">
                                     <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?')">Hapus</button>
@@ -290,8 +321,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_id'])) {
             <p>Tidak ada riwayat pembayaran.</p>
         <?php endif; ?>
     </div>
+
     <div class="container mt-5">
-    <h2 class="mt-4">Penarikan Pending</h2>
+        <h2>Riwayat Pembayaran Gagal</h2>
+        <?php if (mysqli_num_rows($result_gagal) > 0): ?>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Nama Pembayar</th>
+                        <th>Nama Warung</th>
+                        <th>Jumlah Pembayaran (Rp)</th>
+                        <th>Keterangan</th>
+                        <th>Tanggal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($riwayat = mysqli_fetch_assoc($result_gagal)): ?>
+                        <tr>
+                            <td><?= $riwayat['nama_pembayar'] ?></td>
+                            <td><?= $riwayat['nama_warung'] ?></td>
+                            <td><?= number_format($riwayat['jumlah_pembayaran'], 2, ',', '.') ?></td>
+                            <td><?= $riwayat['keterangan']?></td>
+                            <td><?= date('d-m-Y', strtotime($riwayat['tanggal'])) ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>Tidak ada riwayat pembayaran.</p>
+        <?php endif; ?>
+    </div>
+
+
+    <div class="container mt-5">
+    <h2 class="mt-4">Status Penarikan</h2>
         <?php if (mysqli_num_rows($result_penarikan) > 0): ?>
             <table class="table">
                 <thead>

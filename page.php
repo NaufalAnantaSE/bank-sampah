@@ -38,7 +38,11 @@ if ($mod == 'home') {
 } elseif ($mod == 'edit') {
     include "pengelola/edit.php";
 
-} elseif ($mod == 'edit-user') {
+} elseif ($mod == 'edit2') {
+    include "pengelola/edit2.php";
+
+}  
+elseif ($mod == 'edit-user') {
     include "pengelola/edit_user.php";
 
 } elseif ($mod == 'edit-war') {
@@ -84,7 +88,7 @@ if ($mod == 'home') {
     include "unauthorized2.php";
 
 } elseif ($mod == 'search') {
-    include "assets/components/search.php";
+    include "pengelola/search.php";
 
 } else {
     // Jika mod tidak dikenali, Anda bisa memasukkan default behavior atau error page

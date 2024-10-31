@@ -225,9 +225,9 @@ require 'config/connect.php';
     transform: scale(1.1); /* Sedikit memperbesar saat hover */
 }
 
-/* Scrollbar pada Firefox */
-scrollbar-color: #70de74 #f4f6f9; /* Warna thumb dan track */
-scrollbar-width: thin; /* Menjadikan scrollbar lebih tipis */
+/* Scrollbar pada Firefox 
+scrollbar-color: #70de74 #f4f6f9;  Warna thumb dan track 
+scrollbar-width: thin;  Menjadikan scrollbar lebih tipis */
 
     </style>
 </head>

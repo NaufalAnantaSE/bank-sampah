@@ -17,53 +17,23 @@ require 'config/connect.php';
 
 $id_pengelola = $_SESSION['user']['id'];
 
-// Ambil data sampah yang siap untuk di-pickup
+// Proses pencarian rumah tangga berdasarkan nama
+$search_query = "";
+if (isset($_POST['search']) || isset($_GET['search'])) {
+    $search_query = isset($_POST['search']) ? $_POST['search'] : $_GET['search'];
+}
+
+// Ambil data sampah yang siap untuk di-pickup, sesuai dengan pencarian rumah tangga
 $query_sampah = "SELECT s.*, r.nama, r.rw, r.alamat, r.kontak, js.nama_jenis AS jenis_sampah 
                  FROM sampah s 
                  JOIN rumah_tangga r ON s.id_rumah_tangga = r.id 
                  JOIN jenis_sampah js ON s.id_jenis_sampah = js.id
-                 WHERE s.status = 'siap hitung'";
+                 WHERE s.status = 'siap hitung' AND r.nama LIKE '%$search_query%'";
 $query_sampah .= " ORDER BY r.rw, r.nama"; // Urutkan berdasarkan RW dan nama rumah tangga
 $result_sampah = mysqli_query($conn, $query_sampah);
 
-// Ambil semua history sampah
-$query_history = "SELECT s.*, r.nama, r.alamat, r.kontak, js.nama_jenis AS jenis_sampah 
-                  FROM sampah s 
-                  JOIN rumah_tangga r ON s.id_rumah_tangga = r.id 
-                  JOIN jenis_sampah js ON s.id_jenis_sampah = js.id
-                  WHERE s.status = 'selesai'
-                  ORDER BY s.id DESC";
-$result_history = mysqli_query($conn, $query_history);
-
-// Ambil total harga per rumah tangga
-$query_total_sampah_pickup = "SELECT r.nama, SUM(s.total_harga) AS total_harga
-                              FROM sampah s
-                              JOIN rumah_tangga r ON s.id_rumah_tangga = r.id
-                              WHERE s.status = 'menunggu_pickup'
-                              GROUP BY r.id";
-$result_total_sampah_pickup = mysqli_query($conn, $query_total_sampah_pickup);
-
-// Query untuk total harga sampah selesai
-$query_total_sampah_selesai = "SELECT r.nama, SUM(s.total_harga) AS total_harga
-                               FROM sampah s
-                               JOIN rumah_tangga r ON s.id_rumah_tangga = r.id
-                               WHERE s.status = 'selesai'
-                               GROUP BY r.id";
-$result_total_sampah_selesai = mysqli_query($conn, $query_total_sampah_selesai);
-
-// Simpan total harga per rumah tangga dalam array
-$totals_by_household = [];
-while ($row = mysqli_fetch_assoc($result_total_sampah_pickup)) {
-    $totals_by_household[$row['nama']] = $row['total_harga'];
-}
-
-$totals_by_household1 = [];
-while ($row = mysqli_fetch_assoc($result_total_sampah_selesai)) {
-    $totals_by_household1[$row['nama']] = $row['total_harga'];
-}
-
 // Handle POST request untuk update atau hapus sampah
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
     $id_sampah = $_POST['id_sampah'];
 
     // Jika tombol hapus diklik
@@ -74,8 +44,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Cek apakah query berhasil dijalankan
         if ($result_delete) {
-            // Redirect ke halaman pengelola setelah penghapusan berhasil
-            header("Location: page.php?mod=pengelola");
+            // Redirect ke halaman search setelah penghapusan berhasil
+            header("Location: page.php?mod=search&search=" . urlencode($search_query));
             exit();
         } else {
             echo "Gagal menghapus sampah. Silakan coba lagi.";
@@ -90,8 +60,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $query_update_pengelola = "UPDATE sampah SET confirmed_by_pengelola = 'diterima' WHERE id = '$id_sampah'";
         mysqli_query($conn, $query_update_pengelola);
 
-        // Redirect ke halaman pengelola setelah selesai
-        header("Location: page.php?mod=pengelola");
+        // Redirect ke halaman search setelah selesai
+        header("Location: page.php?mod=search&search=" . urlencode($search_query));
         exit();
     }
 }
@@ -113,6 +83,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="container mt-5">
         <h1 class="text-center">Pengelola Sampah Desa Salem</h1>
+
+        <!-- Form Pencarian -->
+        <form onsubmit="redirectToSearch(event)" class="mb-4">
+            <div class="form-group row">
+                <label for="search" class="col-sm-2 col-form-label">Cari Rumah Tangga:</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" id="search" name="search" placeholder="Masukkan Nama Rumah Tangga" value="<?= htmlspecialchars($search_query) ?>">
+                </div>
+                <div class="col-sm-2">
+                    <button type="button" onclick="redirectToSearch(event)" class="btn btn-primary">Cari</button>
+                </div>
+            </div>
+        </form>
+
+        <script>
+            function redirectToSearch(event) {
+                event.preventDefault(); // Mencegah submit form
+                const query = document.getElementById("search").value;
+                if (query) {
+                    window.location.href = `page.php?mod=search&search=${encodeURIComponent(query)}`;
+                }
+            }
+        </script>
 
         <!-- Bagian Sampah Siap Pickup -->
         <h4 class="mt-4">Order Sampah</h4>
@@ -182,13 +175,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
                                     <button value="selesai" name="status" class="btn btn-success mt-2"
-                                        <?= ($sampah['confirmed_by_pengelola'] == 'diterima') ? 'disabled' : '' ?>>Selesai</button>
+                                        <?= ($sampah['confirmed_by_pengelola'] == 'diterima') ? 'enabled' : '' ?>>Selesai</button>
                                 </form>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
                                     <button type="submit" name="action" value="hapus" class="btn btn-danger mt-2">Hapus</button>
                                 </form>
-                                <a href="page.php?mod=edit&id=<?= $sampah['id'] ?>" class="btn btn-info mt-2">Hitung Sampah</a>
+                                <a href="page.php?mod=edit2&id=<?= $sampah['id'] ?>" class="btn btn-info mt-2">Hitung Sampah</a>
                             </td>
                         </tr>
                         <?php $total_pickup += $sampah['total_harga']; ?>
@@ -201,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </tbody>
                     </table>
         <?php else: ?>
-            <p class="text-center">Tidak ada order sampah yang siap diproses.</p>
+            <p class="text-center">Tidak ada order sampah yang sesuai dengan pencarian.</p>
         <?php endif; ?>
     </div>
 </body>

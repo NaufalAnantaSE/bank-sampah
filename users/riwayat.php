@@ -200,9 +200,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     transform: scale(1.1); /* Sedikit memperbesar saat hover */
 }
 
-/* Scrollbar pada Firefox */
-scrollbar-color: #70de74 #f4f6f9; /* Warna thumb dan track */
-scrollbar-width: thin; /* Menjadikan scrollbar lebih tipis */
+/* Scrollbar pada Firefox
+scrollbar-color: #70de74 #f4f6f9; /* Warna thumb dan track 
+scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
     </style>
 </head>
 
@@ -316,6 +316,8 @@ scrollbar-width: thin; /* Menjadikan scrollbar lebih tipis */
         <!-- Riwayat Pembayaran -->
         <div class="card p-4">
             <h4>Riwayat Pembayaran</h4>
+            <h5 style="color: red;">Pembayaran yang berstatus "gagal" dikarenakan kurangnya pembayaran pada saat transaksi di warung terkait</h5>
+            <h5 style="color: red;">Harap hubungi warung terkait untuk menyelesaikan pembayaran</h5>
             <?php if (mysqli_num_rows($result_riwayat) > 0): ?>
                 <table class="table table-striped">
                     <thead>
@@ -347,7 +349,6 @@ scrollbar-width: thin; /* Menjadikan scrollbar lebih tipis */
             <?php endif; ?>
         </div>
     </div>
-
     <!-- Modal Delete Confirmation -->
     <div class="modal fade" id="modalDelete" tabindex="-1" role="dialog" aria-labelledby="modalDeleteLabel"
         aria-hidden="true">
