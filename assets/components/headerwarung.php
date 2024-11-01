@@ -81,6 +81,11 @@
                 top: 20px;
             }
         }
+        .btn-spacing {
+            margin-right: 2px;
+        }
+
+
     </style>
 </head>
 <body>
@@ -101,17 +106,15 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-home"></i> Home</a>
+                    <a class="nav-link" href="?mod=warung"><i class="fas fa-home btn-sm btn-spacing"></i> Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-history"></i> History</a>
+                    <a class="nav-link" href="?mod=riwayat-warung"><i class="fas fa-history btn-sm btn-spacing"></i> History</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-tags"></i> Pencairan saldo</a>
+                    <a class="nav-link" href="?mod=pencairan"><i class="fas fa-tags btn-sm btn-spacing"></i> Pencairan saldo</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class="fas fa-user"></i>Profile anda</a>
-                </li>
+
             </ul>
         </div>
     </nav>

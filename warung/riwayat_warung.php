@@ -222,74 +222,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .btn-spacing {
             margin-right: 5px;
+            /* Atur jarak sesuai kebutuhan */
         }
 
         .btn-group form:last-child .btn-spacing {
             margin-right: 0;
+            /* Menghilangkan margin pada tombol terakhir */
         }
     </style>
 </head>
 
 <body>
     <?php include 'assets/components/headerwarung.php'; ?>
-
-    <div class="container mt-5">
-        <h1 class="text-center">Warung Mitra Dashboard</h1>
-        <p class="text-center">Selamat datang, <?= $nama ?></p>
-        <h3>Saldo Anda: <span style="color: #27ae60;">Rp. <?= number_format($saldo, 2, ',', '.') ?></span></h3>
-        <a href="page.php?mod=pencairan" class="btn btn-warning mt-3">Cairkan Saldo</a>
-    </div>
-
-    <!-- Pembayaran Pending Section -->
-    <div class="container mt-5">
-        <h2>Pembayaran Pending</h2>
-        <?php if (mysqli_num_rows($result_pending) > 0): ?>
-            <?php while ($pending = mysqli_fetch_assoc($result_pending)): ?>
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="data-item">
-                            <span class="data-label">Nama Pembayar:</span>
-                            <span class="data-value"><?= $pending['nama_pembayar'] ?></span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Jumlah Pembayaran (Rp):</span>
-                            <span class="data-value"><?= number_format($pending['jumlah_pembayaran'], 2, ',', '.') ?></span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Keterangan:</span>
-                            <span class="data-value"><?= $pending['keterangan'] ?></span>
-                        </div>
-                        <div class="data-item">
-                            <span class="data-label">Tanggal:</span>
-                            <span class="data-value"><?= date('d-m-Y', strtotime($pending['tanggal'])) ?></span>
-                        </div>
-                        <div class="btn-group mt-2 justify-content-center d-flex align-items-center justify-space-between">
-                            <form method="POST">
-                                <input type="hidden" name="transaksi_id" value="<?= $pending['id'] ?>">
-                                <button type="submit" class="btn btn-success btn-sm btn-spacing">Selesai</button>
-                            </form>
-                            <form method="POST">
-                                <input type="hidden" name="gagal_id" value="<?= $pending['id'] ?>">
-                                <button type="submit" class="btn btn-warning btn-sm btn-spacing">Gagal</button>
-                            </form>
-                            <form method="POST">
-                                <input type="hidden" name="hapus_id" value="<?= $pending['id'] ?>">
-                                <button type="submit" class="btn btn-danger btn-sm btn-spacing"
-                                    onclick="return confirm('Apakah Anda yakin ingin menghapus transaksi ini?')">Hapus</button>
-                            </form>
-                        </div>
-
-
-                    </div>
-                </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p>Tidak ada pembayaran pending.</p>
-        <?php endif; ?>
-    </div>
     <!-- Riwayat Pembayaran Section -->
     <div class="container mt-5">
-        <h2>Riwayat Pembayaran</h2>
+        <h1 class="text-center">Riwayat Pembayaran <?= $nama ?></h1>
         <?php if (mysqli_num_rows($result_riwayat) > 0): ?>
             <?php while ($riwayat = mysqli_fetch_assoc($result_riwayat)): ?>
                 <div class="card mb-3">

@@ -88,19 +88,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     mysqli_query($conn, $query_update_rumah_tangga);
 
     // Cek jika sudah terkonfirmasi oleh kedua belah pihak
+    $query_update_status = "UPDATE sampah SET status = '$status' WHERE id = '$id_sampah'";
+    mysqli_query($conn, $query_update_status);
+
+    // Jika status diubah menjadi "selesai", tambahkan saldo rumah tangga
+    $id_rumah_tangga = $sampah['id_rumah_tangga'];  
+    $total_harga = $sampah['total_harga'];
+
+    // Update saldo rumah tangga
+    $query_update_saldo = "UPDATE rumah_tangga SET saldo = saldo + $total_harga WHERE id = '$id_rumah_tangga'";
+    mysqli_query($conn, $query_update_saldo);
     if ($sampah['confirmed_by_rumah_tangga'] === 'diterima' && $sampah['confirmed_by_pengelola'] === 'diterima') {
         // Update status sampah
-        $query_update_status = "UPDATE sampah SET status = '$status' WHERE id = '$id_sampah'";
-        mysqli_query($conn, $query_update_status);
-
-        // Jika status diubah menjadi "selesai", tambahkan saldo rumah tangga
         if ($status === 'selesai') {
-            $id_rumah_tangga = $sampah['id_rumah_tangga'];
-            $total_harga = $sampah['total_harga'];
-
-            // Update saldo rumah tangga
-            $query_update_saldo = "UPDATE rumah_tangga SET saldo = saldo + $total_harga WHERE id = '$id_rumah_tangga'";
-            mysqli_query($conn, $query_update_saldo);
         }
     }
 
@@ -374,31 +374,53 @@ scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
             </div>
         </div>
     </div>
-    <!-- Modal untuk Konfirmasi Pembayaran -->
-    <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="paymentModalLabel">Konfirmasi Terima Pembayaran</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Jenis Sampah:</strong> <span id="modalJenisSampah"></span></p>
-                    <p><strong>Berat (kg):</strong> <span id="modalBerat"></span></p>
-                    <p><strong>Total Harga (Rp):</strong> <span id="modalTotalHarga"></span></p>
-                    <form method="POST" id="paymentForm">
-                        <input type="hidden" name="id_sampah" id="modalSampahId">
-                        <input type="hidden" name="status" value="selesai">
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success" form="paymentForm">Konfirmasi Pembayaran</button>
-                </div>
+<!-- Modal pertama untuk Konfirmasi Terima Pembayaran -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Konfirmasi Terima Pembayaran</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p><strong>Jenis Sampah:</strong> <span id="modalJenisSampah"></span></p>
+                <p><strong>Berat (kg):</strong> <span id="modalBerat"></span></p>
+                <p><strong>Total Harga (Rp):</strong> <span id="modalTotalHarga"></span></p>
+                <form method="POST" id="paymentForm">
+                    <input type="hidden" name="id_sampah" id="modalSampahId">
+                    <input type="hidden" name="status" value="selesai">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" onclick="showFinalConfirmation()">Konfirmasi Pembayaran</button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal kedua untuk Konfirmasi Akhir -->
+<div class="modal fade" id="finalConfirmationModal" tabindex="-1" aria-labelledby="finalConfirmationLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="finalConfirmationLabel">Konfirmasi Akhir</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Yakin ingin menerima sampah dengan jenis <strong><span id="confirmJenisSampah"></span></strong>, berat <strong><span id="confirmBerat"></span></strong> kg,
+                    dan total harga <strong>Rp. <span id="confirmTotalHarga"></span></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-success" form="paymentForm">Ya, Terima Pembayaran</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -411,18 +433,29 @@ scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
             $('#modalDelete').modal('show');
         }
     </script>
+
     <script>
-        function openPaymentModal(jenisSampah, berat, totalHarga, sampahId) {
-            // Set modal data
-            document.getElementById('modalJenisSampah').innerText = jenisSampah;
-            document.getElementById('modalBerat').innerText = parseFloat(berat).toFixed(2).replace('.', ',');
-            document.getElementById('modalTotalHarga').innerText = parseFloat(totalHarga).toFixed(2).replace('.', ',');
-            document.getElementById('modalSampahId').value = sampahId;
+    function openPaymentModal(jenisSampah, berat, totalHarga, sampahId) {
+        // Set data modal pertama
+        document.getElementById('modalJenisSampah').innerText = jenisSampah;
+        document.getElementById('modalBerat').innerText = parseFloat(berat).toFixed(2).replace('.', ',');
+        document.getElementById('modalTotalHarga').innerText = parseFloat(totalHarga).toFixed(2).replace('.', ',');
+        document.getElementById('modalSampahId').value = sampahId;
 
-            // Show modal
-            var paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-            paymentModal.show();
-        }
+        // Tampilkan modal pertama
+        var paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        paymentModal.show();
+    }
 
-    </script>
+    function showFinalConfirmation() {
+        // Copy data dari modal pertama ke modal kedua
+        document.getElementById('confirmJenisSampah').innerText = document.getElementById('modalJenisSampah').innerText;
+        document.getElementById('confirmBerat').innerText = document.getElementById('modalBerat').innerText;
+        document.getElementById('confirmTotalHarga').innerText = document.getElementById('modalTotalHarga').innerText;
+
+        // Sembunyikan modal pertama dan tampilkan modal kedua
+        $('#paymentModal').modal('hide');
+        $('#finalConfirmationModal').modal('show');
+    }
+</script>
 </body>

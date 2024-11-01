@@ -16,27 +16,28 @@ require 'config/connect.php';
 
 $id_rumah_tangga = $_SESSION['user']['id'];
 
+// Ambil saldo saat ini dan cek apakah kueri berhasil
+$query_saldo = "SELECT saldo FROM rumah_tangga WHERE id = '$id_rumah_tangga'";
+$result_saldo = mysqli_query($conn, $query_saldo);
 
+if ($result_saldo && mysqli_num_rows($result_saldo) > 0) {
+    $current_saldo = mysqli_fetch_assoc($result_saldo)['saldo'];
+} else {
+    $current_saldo = 0; // Tetapkan nilai default jika saldo tidak ditemukan
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $jumlah_pembayaran = floatval($_POST['jumlah_pembayaran']);
     $id_warung_mitra = $_POST['id_warung_mitra'];
-    $keterangan = mysqli_real_escape_string($conn, $_POST['keterangan']); // Mengambil input keterangan
-    
-    // Ambil saldo saat ini
-    $query_saldo = "SELECT saldo FROM rumah_tangga WHERE id = '$id_rumah_tangga'";
-    $result_saldo = mysqli_query($conn, $query_saldo);
-    $current_saldo = mysqli_fetch_assoc($result_saldo)['saldo'];
-    
+    $keterangan = mysqli_real_escape_string($conn, $_POST['keterangan']);
+
     // Periksa apakah saldo mencukupi
     if ($jumlah_pembayaran <= $current_saldo) {
-
-        
         // Catat transaksi sebagai 'pending'
         $query_transaksi = "INSERT INTO transaksi (id_rumah_tangga, id_warung_mitra, jumlah_pembayaran, keterangan, status, tanggal) 
                             VALUES ('$id_rumah_tangga', '$id_warung_mitra', '$jumlah_pembayaran', '$keterangan', 'pending', NOW())";
         mysqli_query($conn, $query_transaksi);
-        
+
         // Redirect ke halaman riwayat atau sukses
         header("Location: page.php?mod=riwayat");
         exit();
@@ -44,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "Saldo tidak mencukupi.";
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,9 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran</title>
-    <!-- Google Fonts for better typography -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -104,23 +102,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 
 <body>
-    <!-- Header -->
     <?php include 'assets/components/header.php'; ?>
 
-    <!-- Payment Form Section -->
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header text-center">
                         <h2>Pembayaran</h2>
+                        <h3>Saldo Anda saat ini: Rp. <?= number_format($current_saldo, 2, ',', '.') ?></h3>
                     </div>
+
                     <div class="card-body">
                         <form id="paymentForm" method="POST">
-                            <!-- Warung Mitra Selection -->
                             <div class="form-group">
                                 <label for="id_warung_mitra">Pilih Warung Mitra</label>
-                                <select name="id_warung_mitra" class="form-control" required>
+                                <select name="id_warung_mitra" id="id_warung_mitra" class="form-control" required>
                                     <?php
                                     // Ambil daftar warung mitra
                                     $query_warung = "SELECT * FROM warung_mitra";
@@ -132,52 +129,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                 </select>
                             </div>
 
-                            <!-- Jumlah Pembayaran -->
                             <div class="form-group">
                                 <label for="jumlah_pembayaran">Jumlah Pembayaran (Rp)</label>
-                                <input type="number" name="jumlah_pembayaran" step="0.01" class="form-control" required>
+                                <input type="number" name="jumlah_pembayaran" id="jumlah_pembayaran" step="0.01"
+                                    class="form-control" required>
                             </div>
-                            <!-- Form Pembayaran Rumah Tangga -->
+
                             <div class="form-group">
                                 <label for="keterangan">Keterangan Pembayaran</label>
                                 <textarea name="keterangan" class="form-control" required></textarea>
                             </div>
-                            <!-- Submit Button -->
-                            <button type="button" class="btn btn-primary btn-block" onclick="confirmPayment()">Bayar</button>
 
-                            <script>
-                            function confirmPayment() {
-                                var result = confirm("Apakah Anda yakin ingin melakukan pembayaran?");
-                                if (result) {
-                                    // Jika pengguna mengklik 'OK', lakukan pengiriman form atau proses pembayaran
-                                    document.querySelector("form").submit(); // Ganti dengan selector form yang sesuai
-                                } else {
-                                    // Jika pengguna mengklik 'Cancel', tidak ada aksi
-                                    return;
-                                }
-                            }
-                            </script>
-
-                            <!-- Modal Konfirmasi Pembayaran -->
-                            <!-- <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="confirmModalLabel">Konfirmasi Pembayaran</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Apakah Anda yakin ingin melanjutkan pembayaran?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                                            <button type="button" class="btn btn-primary" id="confirmPayment">Konfirmasi</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
+                            <button type="button" class="btn btn-primary btn-block"
+                                onclick="showConfirmationModal()">Bayar</button>
                         </form>
                     </div>
                 </div>
@@ -185,18 +149,52 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Pembayaran -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Konfirmasi Pembayaran</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="confirmMessage">
+                    Apakah Anda yakin ingin melanjutkan pembayaran ini?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" onclick="submitPayment()">Konfirmasi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
-    <!-- <script>
-        $(document).ready(function() {
-            // Ketika pengguna mengklik 'Konfirmasi', kirim form
-            $('#confirmPayment').on('click', function () {
-                $('#paymentForm').submit(); // Kirim form
-            });
-        });
-    </script> -->
+    <script>
+        function showConfirmationModal() {
+            // Ambil nilai dari jumlah pembayaran dan warung mitra
+            var jumlahPembayaran = document.getElementById('jumlah_pembayaran').value;
+            var warungMitraSelect = document.getElementById('id_warung_mitra');
+            var warungMitraText = warungMitraSelect.options[warungMitraSelect.selectedIndex].text;
+
+            // Set pesan konfirmasi dengan teks bold
+            var confirmMessage = "Apakah Anda yakin ingin melanjutkan pembayaran sebesar <strong>Rp " + jumlahPembayaran + "</strong> ke warung mitra <strong>" + warungMitraText + "</strong>?";
+            document.getElementById('confirmMessage').innerHTML = confirmMessage;
+
+            // Tampilkan modal
+            $('#confirmModal').modal('show');
+        }
+
+        function submitPayment() {
+            $('#confirmModal').modal('hide');
+            document.getElementById('paymentForm').submit();
+        }
+    </script>
 </body>
 
 </html>

@@ -90,6 +90,9 @@ elseif ($mod == 'edit-user') {
 } elseif ($mod == 'search') {
     include "pengelola/search.php";
 
+} elseif ($mod == 'riwayat-warung') {
+    include "warung/riwayat_warung.php";
+
 } else {
     // Jika mod tidak dikenali, Anda bisa memasukkan default behavior atau error page
     echo "Halaman tidak ditemukan.";

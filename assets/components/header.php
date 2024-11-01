@@ -82,6 +82,11 @@
             margin: 5px 0;
         }
 
+        .btn-spacing {
+            margin-right: 5px;
+            /* Atur jarak sesuai kebutuhan */
+        }
+
         /* Responsive Styling */
         @media (max-width: 992px) {
             .navbar-nav {
@@ -113,6 +118,12 @@
             .navbar-toggler {
                 display: block;
             }
+
+            .btn-spacing {
+                margin-right: 5px;
+
+            }
+
         }
     </style>
 </head>
@@ -135,22 +146,23 @@
         <!-- Navigation Menu -->
         <ul class="navbar-nav" id="navbarNav">
             <li class="nav-item">
-                <a class="nav-link" href="?mod=users"><i class="fas fa-home"></i> Home</a>
+                <a class="nav-link" href="?mod=users"><i class="fas fa-home btn-sm btn-spacing"></i> Home</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="?mod=riwayat"><i class="fas fa-history"></i> History</a>
+                <a class="nav-link" href="?mod=riwayat"><i class="fas fa-history btn-sm btn-spacing"></i> History</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="?mod=jual"><i class="fas fa-tags"></i> Sell Trash</a>
+                <a class="nav-link" href="?mod=jual"><i class="fas fa-tags btn-sm btn-spacing"></i> Sell Trash</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="?mod=profile"><i class="fas fa-user"></i> Profile</a>
+                <a class="nav-link" href="?mod=profile"><i class="fas fa-user btn-sm btn-spacing"></i> Profile</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="?mod=pembayaran"><i class="fas fa-credit-card"></i> Pembayaran Mitra</a>
+                <a class="nav-link" href="?mod=pembayaran"><i class="fas fa-credit-card btn-sm btn-spacing"></i>
+                    Pembayaran Mitra</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                <a class="nav-link" href="logout.php"><i class="fas fa-sign-out-alt btn-sm btn-spacing"></i> Logout</a>
             </li>
         </ul>
 

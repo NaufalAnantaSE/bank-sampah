@@ -69,14 +69,20 @@ $result_jenis_sampah = mysqli_query($conn, $query_jenis_sampah);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<?php include 'assets/components/headerpeng.php'; ?>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hitung Sampah</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link CSS Bootstrap 5 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
+    <?php include 'assets/components/headerpeng.php'; ?>
     <div class="container mt-5">
         <h1 class="text-center">Hitung Sampah</h1>
 
@@ -94,12 +100,14 @@ $result_jenis_sampah = mysqli_query($conn, $query_jenis_sampah);
 
             <div class="form-group">
                 <label for="berat">Berat (kg)</label>
-                <input type="number" step="0.01" name="berat" id="berat" value="<?= $sampah['berat'] ?>" class="form-control" required>
+                <input type="number" step="0.01" name="berat" id="berat" value="<?= $sampah['berat'] ?>"
+                    class="form-control" required>
             </div>
 
             <div class="form-group">
                 <label for="harga_per_kg">Harga per Kg (Rp)</label>
-                <input type="number" step="0.01" name="harga_per_kg" id="harga_per_kg" value="<?= $sampah['harga_per_kg'] ?>" class="form-control" readonly>
+                <input type="number" step="0.01" name="harga_per_kg" id="harga_per_kg"
+                    value="<?= $sampah['harga_per_kg'] ?>" class="form-control" readonly>
             </div>
 
             <!-- <div class="form-group">
@@ -113,11 +121,13 @@ $result_jenis_sampah = mysqli_query($conn, $query_jenis_sampah);
     </div>
 
     <script>
-    document.getElementById('berat').addEventListener('input', function() {
-        const berat = parseFloat(this.value) || 0;
-        const hargaPerKg = parseFloat(document.getElementById('harga_per_kg').value) || 0;
-        document.getElementById('total_harga').value = (berat * hargaPerKg).toFixed(2);
-    });
+        document.getElementById('berat').addEventListener('input', function () {
+            const berat = parseFloat(this.value) || 0;
+            const hargaPerKg = parseFloat(document.getElementById('harga_per_kg').value) || 0;
+            document.getElementById('total_harga').value = (berat * hargaPerKg).toFixed(2);
+        });
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

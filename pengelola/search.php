@@ -75,13 +75,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengelola Sampah</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Tambahan CSS agar lebih responsif dan profesional */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        h1,
+        h4,
+        h5 {
+            color: #343a40;
+        }
+
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th,
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn {
+            font-size: 0.9rem;
+        }
+
+        /* Tabel berformat grid saat di mode mobile */
+        @media (max-width: 768px) {
+            .table {
+                display: block;
+                width: 100%;
+            }
+
+            .table thead {
+                display: none;
+            }
+
+            .table tbody tr {
+                display: flex;
+                flex-direction: column;
+                border: 1px solid #dee2e6;
+                margin-bottom: 10px;
+                padding: 10px;
+                border-radius: 8px;
+            }
+
+            .table tbody tr td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                font-size: 0.9rem;
+            }
+
+            .table tbody tr td:before {
+                content: attr(data-label);
+                font-weight: bold;
+                color: #343a40;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
     <?php include 'assets/components/headerpeng.php'; ?>
 
-    <div class="container mt-5">
+    <div class="container mt-5 table-container">
         <h1 class="text-center">Pengelola Sampah Desa Salem</h1>
 
         <!-- Form Pencarian -->
@@ -89,7 +152,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
             <div class="form-group row">
                 <label for="search" class="col-sm-2 col-form-label">Cari Rumah Tangga:</label>
                 <div class="col-sm-8">
-                    <input type="text" class="form-control" id="search" name="search" placeholder="Masukkan Nama Rumah Tangga" value="<?= htmlspecialchars($search_query) ?>">
+                    <input type="text" class="form-control" id="search" name="search"
+                        placeholder="Masukkan Nama Rumah Tangga" value="<?= htmlspecialchars($search_query) ?>">
                 </div>
                 <div class="col-sm-2">
                     <button type="button" onclick="redirectToSearch(event)" class="btn btn-primary">Cari</button>
@@ -99,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
 
         <script>
             function redirectToSearch(event) {
-                event.preventDefault(); // Mencegah submit form
+                event.preventDefault();
                 const query = document.getElementById("search").value;
                 if (query) {
                     window.location.href = `page.php?mod=search&search=${encodeURIComponent(query)}`;
@@ -112,11 +176,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
 
         <?php if (mysqli_num_rows($result_sampah) > 0): ?>
             <?php
-            $current_rw = null; // Variabel untuk menyimpan RW saat ini
-            $current_household = null; // Variabel untuk menyimpan rumah tangga saat ini
+            $current_rw = null;
+            $current_household = null;
             $total_pickup = 0;
+
             while ($sampah = mysqli_fetch_assoc($result_sampah)):
-                // Cek apakah RW saat ini berbeda dengan RW sebelumnya
                 if ($current_rw !== $sampah['rw']): ?>
                     <?php if ($current_rw !== null): ?>
                         <tr>
@@ -127,14 +191,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
                         </tbody>
                         </table>
                     <?php endif; ?>
-                    <h4 class="mt-4">RW: <?= $sampah['rw'] ?></h4> <!-- Tampilkan RW -->
+                    <h4 class="mt-4">RW: <?= $sampah['rw'] ?></h4>
                     <?php
-                    $current_rw = $sampah['rw']; // Set RW saat ini
-                    $current_household = null; // Reset rumah tangga saat RW baru dimulai
-                    $total_pickup = 0; // Reset total pickup untuk RW baru
+                    $current_rw = $sampah['rw'];
+                    $current_household = null;
+                    $total_pickup = 0;
                 endif;
 
-                // Cek apakah rumah tangga saat ini berbeda dengan rumah tangga sebelumnya
                 if ($current_household !== $sampah['nama']): ?>
                     <?php if ($current_household !== null): ?>
                         <tr>
@@ -145,8 +208,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
                         </tbody>
                         </table>
                     <?php endif;
-                    $current_household = $sampah['nama']; // Set rumah tangga saat ini
-                    $total_pickup = 0; // Reset total pickup untuk rumah tangga baru ?>
+                    $current_household = $sampah['nama'];
+                    $total_pickup = 0; ?>
 
                     <h5 class="mt-4">Rumah Tangga: <?= $sampah['nama'] ?></h5>
                     <p>Alamat: <?= $sampah['alamat'] ?></p>
@@ -166,16 +229,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
                         <tbody>
                         <?php endif; ?>
                         <tr>
-                            <td><?= $sampah['jenis_sampah'] ?></td>
-                            <td><?= number_format($sampah['berat'], 2, ',', '.') ?></td>
-                            <td><?= number_format($sampah['total_harga'], 2, ',', '.') ?></td>
-                            <td><?= $sampah['status'] ?></td>
-                            <td><?= $sampah['confirmed_by_pengelola'] ?></td>
-                            <td>
+                            <td data-label="Jenis Sampah"><?= $sampah['jenis_sampah'] ?></td>
+                            <td data-label="Berat (kg)"><?= number_format($sampah['berat'], 2, ',', '.') ?></td>
+                            <td data-label="Total Harga (Rp)"><?= number_format($sampah['total_harga'], 2, ',', '.') ?></td>
+                            <td data-label="Status"><?= $sampah['status'] ?></td>
+                            <td data-label="Pembayaran Pengelola"><?= $sampah['confirmed_by_pengelola'] ?></td>
+                            <td data-label="Aksi">
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
-                                    <button value="selesai" name="status" class="btn btn-success mt-2"
-                                        <?= ($sampah['confirmed_by_pengelola'] == 'diterima') ? 'enabled' : '' ?>>Selesai</button>
+                                    <button type="submit" name="status" value="selesai" class="btn btn-success mt-2"
+                                        <?= ($sampah['confirmed_by_pengelola'] == 'diterima') ? 'disabled' : '' ?>>Selesai</button>
                                 </form>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
@@ -191,8 +254,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
                         <td><strong><?= number_format($total_pickup, 2, ',', '.') ?></strong></td>
                         <td></td>
                     </tr>
-                    </tbody>
-                    </table>
+                </tbody>
+            </table>
         <?php else: ?>
             <p class="text-center">Tidak ada order sampah yang sesuai dengan pencarian.</p>
         <?php endif; ?>

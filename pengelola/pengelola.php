@@ -96,7 +96,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -104,73 +103,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pengelola Sampah</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link CSS Bootstrap 5 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
-
     <?php include 'assets/components/headerpeng.php'; ?>
 
     <div class="container mt-5">
-        <h1 class="text-center">Pengelola Sampah Desa Salem</h1>
+        <h1 class="text-center mb-4">Pengelola Sampah Desa Salem</h1>
 
         <!-- Bagian Sampah Siap Pickup -->
-        <h4 class="mt-4">Order Sampah</h4>
-
-        <?php if (mysqli_num_rows($result_sampah) > 0): ?>
-            <?php
-            $current_rw = null; // Variabel untuk menyimpan RW saat ini
-            $current_household = null; // Variabel untuk menyimpan rumah tangga saat ini
-            $total_pickup = 0;
-            while ($sampah = mysqli_fetch_assoc($result_sampah)):
-                // Cek apakah RW saat ini berbeda dengan RW sebelumnya
-                if ($current_rw !== $sampah['rw']): ?>
-                    <?php if ($current_rw !== null): ?>
-                        <tr>
-                            <td colspan="5" class="text-right"><strong>Total Harga (Rp):</strong></td>
-                            <td><strong><?= number_format($total_pickup, 2, ',', '.') ?></strong></td>
-                            <td></td>
-                        </tr>
-                        </tbody>
-                        </table>
-                    <?php endif; ?>
-                    <h4 class="mt-4">RW: <?= $sampah['rw'] ?></h4> <!-- Tampilkan RW -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-primary text-white text-center">
+                <h4><i class="fas fa-recycle"></i> Order Sampah Siap Diproses</h4>
+            </div>
+            <div class="card-body">
+                <?php if (mysqli_num_rows($result_sampah) > 0): ?>
                     <?php
-                    $current_rw = $sampah['rw']; // Set RW saat ini
-                    $current_household = null; // Reset rumah tangga saat RW baru dimulai
-                    $total_pickup = 0; // Reset total pickup untuk RW baru
-                endif;
+                    $current_rw = null;
+                    $current_household = null;
+                    $total_pickup = 0;
+                    while ($sampah = mysqli_fetch_assoc($result_sampah)):
+                        if ($current_rw !== $sampah['rw']): ?>
+                            <?php if ($current_rw !== null): ?>
+                                <tr>
+                                    <td colspan="5" class="text-end fw-bold">Total Harga (Rp):</td>
+                                    <td class="fw-bold"><?= number_format($total_pickup, 2, ',', '.') ?></td>
+                                </tr>
+                                </tbody>
+                                </table>
+                            <?php endif; ?>
+                            <h5 class="mt-4 text-decoration-underline">RW: <?= $sampah['rw'] ?></h5>
+                            <?php
+                            $current_rw = $sampah['rw'];
+                            $current_household = null;
+                            $total_pickup = 0;
+                        endif;
 
-                // Cek apakah rumah tangga saat ini berbeda dengan rumah tangga sebelumnya
-                if ($current_household !== $sampah['nama']): ?>
-                    <?php if ($current_household !== null): ?>
-                        <tr>
-                            <td colspan="5" class="text-right"><strong>Total Harga (Rp):</strong></td>
-                            <td><strong><?= number_format($total_pickup, 2, ',', '.') ?></strong></td>
-                            <td></td>
-                        </tr>
-                        </tbody>
-                        </table>
-                    <?php endif;
-                    $current_household = $sampah['nama']; // Set rumah tangga saat ini
-                    $total_pickup = 0; // Reset total pickup untuk rumah tangga baru ?>
-
-                    <h5 class="mt-4">Rumah Tangga: <?= $sampah['nama'] ?></h5>
-                    <p>Alamat: <?= $sampah['alamat'] ?></p>
-                    <p>RW: <?= $sampah['rw'] ?></p>
-                    <p>Kontak: <?= $sampah['kontak'] ?></p>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Jenis Sampah</th>
-                                <th>Berat (kg)</th>
-                                <th>Total Harga (Rp)</th>
-                                <th>Status</th>
-                                <th>Pembayaran Pengelola</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                        if ($current_household !== $sampah['nama']): ?>
+                            <?php if ($current_household !== null): ?>
+                                <tr>
+                                    <td colspan="5" class="text-end fw-bold">Total Harga (Rp):</td>
+                                    <td class="fw-bold"><?= number_format($total_pickup, 2, ',', '.') ?></td>
+                                </tr>
+                                </tbody>
+                                </table>
+                            <?php endif;
+                            $current_household = $sampah['nama'];
+                            $total_pickup = 0; ?>
+                            <div class="mt-3 p-3 border border-info rounded bg-light">
+                                <h6><i class="fas fa-home"></i> Rumah Tangga: <?= $sampah['nama'] ?></h6>
+                                <p><i class="fas fa-map-marker-alt"></i> Alamat: <?= $sampah['alamat'] ?></p>
+                                <p><i class="fas fa-phone-alt"></i> Kontak: <?= $sampah['kontak'] ?></p>
+                            </div>
+                            <table class="table table-striped table-hover mt-3">
+                                <thead>
+                                    <tr class="table-primary">
+                                        <th>Jenis Sampah</th>
+                                        <th>Berat (kg)</th>
+                                        <th>Total Harga (Rp)</th>
+                                        <th>Status</th>
+                                        <th>Pembayaran Pengelola</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                         <?php endif; ?>
                         <tr>
                             <td><?= $sampah['jenis_sampah'] ?></td>
@@ -181,29 +181,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <td>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
-                                    <button value="selesai" name="status" class="btn btn-success mt-2"
-                                        <?= ($sampah['confirmed_by_pengelola'] == 'diterima') ? 'disabled' : '' ?>>Selesai</button>
+                                    <button value="selesai" name="status" class="btn btn-success btn-sm"
+                                        <?= ($sampah['confirmed_by_pengelola'] == 'diterima') ? 'disabled' : '' ?>>
+                                        <i class="fas fa-check"></i> Selesai
+                                    </button>
                                 </form>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
-                                    <button type="submit" name="action" value="hapus" class="btn btn-danger mt-2">Hapus</button>
+                                    <button type="submit" name="action" value="hapus" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt"></i> Hapus
+                                    </button>
                                 </form>
-                                <a href="page.php?mod=edit&id=<?= $sampah['id'] ?>" class="btn btn-info mt-2">Hitung Sampah</a>
+                                <a href="page.php?mod=edit&id=<?= $sampah['id'] ?>" class="btn btn-info btn-sm">
+                                    <i class="fas fa-edit"></i> Hitung Sampah
+                                </a>
                             </td>
                         </tr>
                         <?php $total_pickup += $sampah['total_harga']; ?>
                     <?php endwhile; ?>
                     <tr>
-                        <td colspan="5" class="text-right"><strong>Total Harga (Rp):</strong></td>
-                        <td><strong><?= number_format($total_pickup, 2, ',', '.') ?></strong></td>
-                        <td></td>
+                        <td colspan="5" class="text-end fw-bold">Total Harga (Rp):</td>
+                        <td class="fw-bold"><?= number_format($total_pickup, 2, ',', '.') ?></td>
                     </tr>
                     </tbody>
                     </table>
-        <?php else: ?>
-            <p class="text-center">Tidak ada order sampah yang siap diproses.</p>
-        <?php endif; ?>
+                <?php else: ?>
+                    <p class="text-center">Tidak ada order sampah yang siap diproses.</p>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
+
+    <!-- Link JS Bootstrap 5 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
