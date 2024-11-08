@@ -68,6 +68,16 @@ $query_riwayat_penarikan = "SELECT rp.*, wm.nama_warung
                            ORDER BY rp.tanggal DESC";
 $result_riwayat_penarikan = mysqli_query($conn, $query_riwayat_penarikan);
 
+// Cek apakah tombol hapus riwayat pembayaran yang gagal diklik
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_riwayat_id'])) {
+    $hapus_riwayat_id = $_POST['hapus_riwayat_id'];
+    $query_hapus_riwayat = "DELETE FROM transaksi WHERE id = '$hapus_riwayat_id' AND status = 'gagal'";
+    mysqli_query($conn, $query_hapus_riwayat);
+
+    // Redirect atau tampilkan pesan sukses
+    echo "<script>alert('Riwayat pembayaran gagal berhasil dihapus.'); window.location.href='page.php?mod=warung';</script>";
+}
+
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -242,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <!-- Pembayaran Pending Section -->
     <div class="container mt-5">
-        <h2>Pembayaran Pending</h2>
+        <h2>Persetujuan Pembayaran Belanja</h2>
         <?php if (mysqli_num_rows($result_pending) > 0): ?>
             <?php while ($pending = mysqli_fetch_assoc($result_pending)): ?>
                 <div class="card mb-3">
@@ -266,11 +276,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="btn-group mt-2 justify-content-center d-flex align-items-center justify-space-between">
                             <form method="POST">
                                 <input type="hidden" name="transaksi_id" value="<?= $pending['id'] ?>">
-                                <button type="submit" class="btn btn-success btn-sm btn-spacing">Selesai</button>
+                                <button type="submit" class="btn btn-success btn-sm btn-spacing">Terima</button>
                             </form>
                             <form method="POST">
                                 <input type="hidden" name="gagal_id" value="<?= $pending['id'] ?>">
-                                <button type="submit" class="btn btn-warning btn-sm btn-spacing">Gagal</button>
+                                <button type="submit" class="btn btn-warning btn-sm btn-spacing">Tolak</button>
                             </form>
                             <form method="POST">
                                 <input type="hidden" name="hapus_id" value="<?= $pending['id'] ?>">
@@ -318,6 +328,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <span class="data-label">Tanggal:</span>
                             <span class="data-value"><?= date('d-m-Y', strtotime($riwayat['tanggal'])) ?></span>
                         </div>
+
+                        <?php if ($riwayat['status'] === 'gagal'): ?>
+                            <!-- Tombol Hapus untuk Pembayaran Gagal -->
+                            <div class="btn-group mt-2 justify-content-center d-flex align-items-center">
+                                <form method="POST">
+                                    <input type="hidden" name="hapus_riwayat_id" value="<?= $riwayat['id'] ?>">
+                                    <button type="submit" class="btn btn-danger btn-sm btn-spacing"
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus riwayat pembayaran ini?')">Hapus</button>
+                                </form>
+                            </div>
+                        <?php endif; ?>
+
                     </div>
                 </div>
             <?php endwhile; ?>
@@ -325,6 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Tidak ada riwayat pembayaran.</p>
         <?php endif; ?>
     </div>
+
 
 
     <footer>

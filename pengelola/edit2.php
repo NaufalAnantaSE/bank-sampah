@@ -18,10 +18,12 @@ require 'config/connect.php';
 $id_pengelola = $_SESSION['user']['id'];
 
 // Periksa apakah ada ID sampah yang diberikan
-if (!isset($_GET['id'])) {
-    header("Location: page.php?mod=search");
-    exit();
-}
+// if (!isset($_GET['id'])) {
+//     header("Location: page.php?mod=search");
+//     exit();
+// }
+// Ambil nilai search_query jika tersedia
+$search_query = isset($_GET['search']) ? $_GET['search'] : '';
 
 $id_sampah = $_GET['id'];
 
@@ -55,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         total_harga = '$total_harga'
                     WHERE id = '$id_sampah'";
     if (mysqli_query($conn, $query_update)) {
-        header("Location: page.php?mod=search");
+        header("Location: page.php?mod=search&search=" . urlencode($search_query));
         exit();
     } else {
         echo "Error: " . mysqli_error($conn);

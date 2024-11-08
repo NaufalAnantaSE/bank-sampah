@@ -244,7 +244,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id_sampah'])) {
                                     <input type="hidden" name="id_sampah" value="<?= $sampah['id'] ?>">
                                     <button type="submit" name="action" value="hapus" class="btn btn-danger mt-2">Hapus</button>
                                 </form>
-                                <a href="page.php?mod=edit2&id=<?= $sampah['id'] ?>" class="btn btn-info mt-2">Hitung Sampah</a>
+                                <a href="page.php?mod=edit2&id=<?= $sampah['id'] ?>&search=<?= urlencode($search_query) ?>" class="btn btn-info mt-2">Hitung Sampah</a>
                             </td>
                         </tr>
                         <?php $total_pickup += $sampah['total_harga']; ?>

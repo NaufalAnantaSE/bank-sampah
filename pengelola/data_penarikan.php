@@ -126,14 +126,14 @@ $result_riwayat = mysqli_query($conn, $query_riwayat);
                                         data-target="#modalSelesai" data-id="<?= $penarikan['id'] ?>"
                                         data-jumlah="<?= $penarikan['jumlah'] ?>" data-saldo="<?= $penarikan['saldo_warung'] ?>"
                                         data-nama="<?= $penarikan['nama_warung'] ?>">
-                                        Selesai
+                                        Disetujui
                                     </button>
                                 </form>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="id_gagal" value="<?= $penarikan['id'] ?>">
                                     <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modalGagal"
                                         data-id="<?= $penarikan['id'] ?>" data-nama="<?= $penarikan['nama_warung'] ?>">
-                                        Gagal
+                                        Ditolak
                                     </button>
                                 </form>
                             </td>
@@ -171,7 +171,7 @@ $result_riwayat = mysqli_query($conn, $query_riwayat);
             <p>Tidak ada riwayat penarikan.</p>
         <?php endif; ?>
 
-        <h4 class="mt-4">Penarikan Gagal</h4>
+        <h4 class="mt-4">Penarikan Ditolak</h4>
         <?php if (mysqli_num_rows($result_penarikan_gagal) > 0): ?>
             <table class="table">
                 <thead>

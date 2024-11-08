@@ -98,11 +98,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Update saldo rumah tangga
     $query_update_saldo = "UPDATE rumah_tangga SET saldo = saldo + $total_harga WHERE id = '$id_rumah_tangga'";
     mysqli_query($conn, $query_update_saldo);
-    if ($sampah['confirmed_by_rumah_tangga'] === 'diterima' && $sampah['confirmed_by_pengelola'] === 'diterima') {
-        // Update status sampah
-        if ($status === 'selesai') {
-        }
-    }
+
+    // if ($sampah['confirmed_by_rumah_tangga'] === 'diterima' && $sampah['confirmed_by_pengelola'] === 'diterima') {
+    //     // Update status sampah
+    //     if ($status === 'selesai') {
+    //     }
+    // }
 
     header("Location: page.php?mod=riwayat");
     exit();
@@ -252,7 +253,7 @@ scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
                                             <button class="btn btn-success btn-sm mt-2"
                                                 onclick="openPaymentModal('<?= $sampah['nama_jenis'] ?>', '<?= $sampah['berat'] ?>', '<?= $sampah['total_harga'] ?>', '<?= $sampah['id'] ?>')"
                                                 <?= ($sampah['confirmed_by_pengelola'] == 'belum diterima') ? 'disabled' : '' ?>>
-                                                Terima Pembayaran
+                                                Setuju Nilai Transaksi
                                             </button>
                                         </div>
                                     </div>
@@ -316,8 +317,24 @@ scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
         <!-- Riwayat Pembayaran -->
         <div class="card p-4">
             <h4>Riwayat Pembayaran</h4>
-            <h5 style="color: red;">Pembayaran yang berstatus "gagal" dikarenakan kurangnya pembayaran pada saat transaksi di warung terkait</h5>
-            <h5 style="color: red;">Harap hubungi warung terkait untuk menyelesaikan pembayaran</h5>
+            <?php 
+            $adaPembayaranGagal = false;
+
+            // Loop pertama untuk cek status "gagal" tanpa menampilkan data
+            mysqli_data_seek($result_riwayat, 0); // Kembali ke awal hasil query
+            while ($riwayat = mysqli_fetch_assoc($result_riwayat)) {
+                if ($riwayat['status'] === 'gagal') {
+                    $adaPembayaranGagal = true;
+                    break;
+                }
+            }
+            ?>
+
+            <?php if ($adaPembayaranGagal): ?>
+                <h5 style="color: red;">Pembayaran yang berstatus gagal dikarenakan kurangnya pembayaran pada saat transaksi di warung terkait</h5>
+                <h5 style="color: red;">Harap hubungi warung terkait untuk menyelesaikan pembayaran</h5>
+            <?php endif; ?>
+
             <?php if (mysqli_num_rows($result_riwayat) > 0): ?>
                 <table class="table table-striped">
                     <thead>
@@ -330,7 +347,11 @@ scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($riwayat = mysqli_fetch_assoc($result_riwayat)): ?>
+                        <?php 
+                        // Loop kedua untuk menampilkan data tabel
+                        mysqli_data_seek($result_riwayat, 0); // Kembali ke awal hasil query
+                        while ($riwayat = mysqli_fetch_assoc($result_riwayat)): 
+                        ?>
                             <tr>
                                 <td><?= $riwayat['nama_warung'] ?></td>
                                 <td><?= number_format($riwayat['jumlah_pembayaran'], 2, ',', '.') ?></td>
@@ -348,7 +369,7 @@ scrollbar-width: thin; Menjadikan scrollbar lebih tipis; */
                 </div>
             <?php endif; ?>
         </div>
-    </div>
+
     <!-- Modal Delete Confirmation -->
     <div class="modal fade" id="modalDelete" tabindex="-1" role="dialog" aria-labelledby="modalDeleteLabel"
         aria-hidden="true">
