@@ -48,10 +48,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_sampah'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_sampah'])) {
     $id_sampah = $_POST['id_sampah'];
 
+    // Hapus data terkait di tabel sampah terlebih dahulu
+    $query_delete_sampah = "DELETE FROM sampah WHERE id_jenis_sampah = '$id_sampah'";
+    mysqli_query($conn, $query_delete_sampah);
+
+    // Hapus data dari jenis_sampah
     $query_delete = "DELETE FROM jenis_sampah WHERE id = '$id_sampah'";
     mysqli_query($conn, $query_delete);
 
-    header("Location: manage_sampah.php");
+    header("Location: page.php?mod=edit-sampah");
 }
 
 // Update harga sampah

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -81,13 +82,13 @@
                 top: 20px;
             }
         }
+
         .btn-spacing {
             margin-right: 2px;
         }
-
-
     </style>
 </head>
+
 <body>
 
     <!-- Added sticky-top class to make the navbar sticky -->
@@ -98,7 +99,8 @@
         </a>
 
         <!-- Hamburger button for mobile -->
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -109,10 +111,15 @@
                     <a class="nav-link" href="?mod=warung"><i class="fas fa-home btn-sm btn-spacing"></i> Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="?mod=riwayat-warung"><i class="fas fa-history btn-sm btn-spacing"></i> History</a>
+                    <a class="nav-link" href="?mod=riwayat-warung"><i class="fas fa-history btn-sm btn-spacing"></i>
+                        History</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="?mod=pencairan"><i class="fas fa-tags btn-sm btn-spacing"></i> Pencairan saldo</a>
+                    <a class="nav-link" href="?mod=pencairan"><i class="fas fa-tags btn-sm btn-spacing"></i> Pencairan
+                        saldo</a>
+                </li>
+                <li class="nav-item">
+                    <a href="logout.php" class="nav-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </li>
 
             </ul>
@@ -124,4 +131,5 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 
 </body>
+
 </html>
